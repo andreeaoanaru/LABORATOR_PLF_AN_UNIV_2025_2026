@@ -1,0 +1,100 @@
+% =========================================================
+% Tema 2 - Lupul, Capra si Varza
+% Reprezentare:
+%   stare(MalTaran, MalLup, MalCapra, MalVarza)
+% Malurile sunt: stg sau dr
+% =========================================================
+
+% ---------------------------------------------------------
+% Schimbarea malului
+% ---------------------------------------------------------
+opus(stg, dr).
+opus(dr, stg).
+
+% ---------------------------------------------------------
+% Stari initiala si finala
+% ---------------------------------------------------------
+initial(stare(stg, stg, stg, stg)).
+final(stare(dr, dr, dr, dr)).
+
+% ---------------------------------------------------------
+% Validarea unei stari
+% O stare este invalida daca:
+% 1) Lupul si capra sunt pe acelasi mal, fara taran
+% 2) Capra si varza sunt pe acelasi mal, fara taran
+% ---------------------------------------------------------
+valid(stare(T, L, C, V)) :-
+    \+ (L = C, T \= L),   % lupul cu capra fara taran
+    \+ (C = V, T \= C).   % capra cu varza fara taran
+
+% ---------------------------------------------------------
+% Mutari posibile
+% Tararul traverseaza:
+% 1) singur
+% 2) cu lupul
+% 3) cu capra
+% 4) cu varza
+% Dupa fiecare mutare, starea rezultata trebuie sa fie valida
+% ---------------------------------------------------------
+
+% 1. Taranul merge singur
+mutare(stare(T, L, C, V), stare(T1, L, C, V), merge_singur) :-
+    opus(T, T1),
+    valid(stare(T1, L, C, V)).
+
+% 2. Taranul merge cu lupul
+mutare(stare(T, T, C, V), stare(T1, T1, C, V), merge_cu_lupul) :-
+    opus(T, T1),
+    valid(stare(T1, T1, C, V)).
+
+% 3. Taranul merge cu capra
+mutare(stare(T, L, T, V), stare(T1, L, T1, V), merge_cu_capra) :-
+    opus(T, T1),
+    valid(stare(T1, L, T1, V)).
+
+% 4. Taranul merge cu varza
+mutare(stare(T, L, C, T), stare(T1, L, C, T1), merge_cu_varza) :-
+    opus(T, T1),
+    valid(stare(T1, L, C, T1)).
+
+% ---------------------------------------------------------
+% Cautare DFS cu evitare bucle
+% Drum = lista de stari vizitate
+% Actiuni = lista mutarilor efectuate
+% ---------------------------------------------------------
+rezolva(Drum, Actiuni) :-
+    initial(S),
+    dfs(S, [S], DrumInvers, [], ActiuniInvers),
+    reverse(DrumInvers, Drum),
+    reverse(ActiuniInvers, Actiuni).
+
+dfs(Stare, Vizitate, Vizitate, Actiuni, Actiuni) :-
+    final(Stare).
+
+dfs(StareCurenta, Vizitate, DrumFinal, ActiuniCurente, ActiuniFinale) :-
+    mutare(StareCurenta, StareNoua, Actiune),
+    \+ member(StareNoua, Vizitate),          % evita buclele infinite
+    dfs(StareNoua,
+        [StareNoua | Vizitate],
+        DrumFinal,
+        [Actiune | ActiuniCurente],
+        ActiuniFinale).
+
+% ---------------------------------------------------------
+% Afisare frumoasa a solutiei
+% ---------------------------------------------------------
+afiseaza_solutie :-
+    rezolva(Drum, Actiuni),
+    write('Solutia gasita este:'), nl, nl,
+    afiseaza_pasi(Drum, Actiuni, 0).
+
+% Caz final: a ramas doar ultima stare
+afiseaza_pasi([Stare], [], NrPas) :-
+    write('Pasul '), write(NrPas), write(': '), write(Stare), nl.
+
+% Caz general: stare + actiune + rest
+afiseaza_pasi([Stare1, Stare2 | Rest], [Actiune | ActiuniRest], NrPas) :-
+    write('Pasul '), write(NrPas), write(': '), write(Stare1), nl,
+    write('   Actiune: '), write(Actiune), nl,
+    NrPas1 is NrPas + 1,
+    afiseaza_pasi([Stare2 | Rest], ActiuniRest, NrPas1).
