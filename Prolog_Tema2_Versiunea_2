@@ -1,0 +1,108 @@
+% =========================================================
+% Tema 2 - Lupul, Capra si Varza
+% Program Prolog pentru SOLUTIA 2
+%
+% Reprezentarea starii:
+%   stare(MalTaran, MalLup, MalCapra, MalVarza)
+%
+% Malurile:
+%   stg = stanga
+%   dr  = dreapta
+% =========================================================
+
+% ---------------------------------------------------------
+% Starea initiala si finala
+% ---------------------------------------------------------
+initial(stare(stg, stg, stg, stg)).
+final(stare(dr, dr, dr, dr)).
+
+% ---------------------------------------------------------
+% Validarea unei stari
+% O stare este invalida daca:
+% - lupul si capra raman singuri fara taran
+% - capra si varza raman singure fara taran
+% ---------------------------------------------------------
+valid(stare(T, L, C, V)) :-
+    \+ (L = C, T \= L),
+    \+ (C = V, T \= C).
+
+% ---------------------------------------------------------
+% Solutia 2 fixa, prin succesiunea de mutari dorita
+% ---------------------------------------------------------
+solutia2([
+    merge_cu_capra,
+    merge_singur,
+    merge_cu_varza,
+    merge_cu_capra,
+    merge_cu_lupul,
+    merge_singur,
+    merge_cu_capra
+]).
+
+% ---------------------------------------------------------
+% Aplicarea unei mutari asupra unei stari
+% ---------------------------------------------------------
+
+% 1. Taranul merge cu capra
+aplica_mutare(stare(T, L, T, V), merge_cu_capra, stare(T1, L, T1, V)) :-
+    schimba_mal(T, T1),
+    valid(stare(T1, L, T1, V)).
+
+% 2. Taranul merge singur
+aplica_mutare(stare(T, L, C, V), merge_singur, stare(T1, L, C, V)) :-
+    schimba_mal(T, T1),
+    valid(stare(T1, L, C, V)).
+
+% 3. Taranul merge cu varza
+aplica_mutare(stare(T, L, C, T), merge_cu_varza, stare(T1, L, C, T1)) :-
+    schimba_mal(T, T1),
+    valid(stare(T1, L, C, T1)).
+
+% 4. Taranul merge cu lupul
+aplica_mutare(stare(T, T, C, V), merge_cu_lupul, stare(T1, T1, C, V)) :-
+    schimba_mal(T, T1),
+    valid(stare(T1, T1, C, V)).
+
+% ---------------------------------------------------------
+% Schimbarea malului
+% ---------------------------------------------------------
+schimba_mal(stg, dr).
+schimba_mal(dr, stg).
+
+% ---------------------------------------------------------
+% Executarea unei liste de mutari
+% Intoarce lista starilor obtinute
+% ---------------------------------------------------------
+executa_mutari(StareInitiala, [], [StareInitiala]).
+executa_mutari(StareInitiala, [Mutare | RestMutari], [StareInitiala | RestStari]) :-
+    aplica_mutare(StareInitiala, Mutare, StareNoua),
+    executa_mutari(StareNoua, RestMutari, RestStari).
+
+% ---------------------------------------------------------
+% Predicat principal pentru obtinerea solutiei 2
+% ---------------------------------------------------------
+rezolva_solutia2(Actiuni, Stari) :-
+    initial(S0),
+    solutia2(Actiuni),
+    executa_mutari(S0, Actiuni, Stari),
+    last(Stari, Sfarsit),
+    final(Sfarsit).
+
+% ---------------------------------------------------------
+% Afisarea frumoasa a solutiei 2
+% ---------------------------------------------------------
+afiseaza_solutia2 :-
+    rezolva_solutia2(Actiuni, Stari),
+    write('Solutia 2 este:'), nl, nl,
+    afiseaza_pasi(Stari, Actiuni, 0).
+
+% Caz final
+afiseaza_pasi([Stare], [], NrPas) :-
+    write('Pasul '), write(NrPas), write(': '), write(Stare), nl.
+
+% Caz general
+afiseaza_pasi([Stare1, Stare2 | Rest], [Actiune | ActiuniRest], NrPas) :-
+    write('Pasul '), write(NrPas), write(': '), write(Stare1), nl,
+    write('   Actiune: '), write(Actiune), nl,
+    NrPas1 is NrPas + 1,
+    afiseaza_pasi([Stare2 | Rest], ActiuniRest, NrPas1).
