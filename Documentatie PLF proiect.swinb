@@ -1,0 +1,79 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+Documentatie proiect PLF: Lupul, Capra si Varza
+</div>
+
+<div class="nb-cell markdown" name="md2">
+Reprezentarea Stării:
+Codul definește o stare prin structura stare (MalTaran, MalLup, MalCapra, MalVarza).
+
+Fiecare argument poate fi stg (malul stâng) sau dr (malul drept).
+
+Logica: Problema este rezolvată prin transformarea stării inițiale (toți pe malul stâng) în starea finală (toți pe malul drept).
+Definirea Domeniului și a Stărilor Limită
+opus/2: Definește relația de mișcare între maluri. Dacă ești pe stg, singurul loc unde poți merge este dr.
+
+initial/1 și final/1: Stabilesc punctul de plecare și obiectivul algoritmului.
+</div>
+
+<div class="nb-cell program" name="p1">
+opus(stg, dr).
+opus(dr, stg).
+
+initial(stare(stg, stg, stg, stg)).
+final(stare(dr, dr, dr, dr)).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+Validarea Stării (Regulile de Siguranță):
+Aceasta este "creierul" constrângerilor problemei. O stare este validă doar dacă prădătorii nu sunt lăsați singuri cu prada.
+Simbolul \+ reprezintă negația prin eșec (negation as failure).
+
+Condiția spune: "Este valid dacă NU se întâmplă ca lupul să fie cu capra în timp ce tăranul e pe malul opus".
+</div>
+
+<div class="nb-cell program" name="p2">
+valid(stare(T, L, C, V)) :-
+    \+ (L = C, T \= L),   % Lupul și capra sunt pe același mal, dar tăranul NU.
+    \+ (C = V, T \= C).   % Capra și varza sunt pe același mal, dar tăranul NU.
+</div>
+
+<div class="nb-cell markdown" name="md3">
+Definirea Mutărilor (Tranzițiile):
+Există 4 acțiuni posibile. În Prolog, o mutare este o regulă care primește o stare veche și returnează una nouă, cu condiția ca cea nouă să fie valid-ă.
+
+Regula generică: Pentru ca tăranul să ia un obiect cu el, acel obiect trebuie să fie pe același mal cu el (stare(T, L, T, V) – tăranul și capra sunt ambii la T).
+
+Efectul: Tăranul și obiectul își schimbă malul în T1 (opusul lui T), în timp ce restul rămân pe loc.
+</div>
+
+<div class="nb-cell markdown" name="md5">
+Algoritmul de Căutare (DFS):
+Codul folosește Depth-First Search (Căutare în adâncime) pentru a explora posibilitățile.
+Evitarea buclelor: \+ member(StareNoua, Vizitate) este crucială. Fără ea, tăranul s-ar putea plimba cu capra înainte și înapoi la infinit (stg -&gt; dr -&gt; stg...).
+
+Recursivitate: Algoritmul încearcă o mutare, verifică dacă e nouă, o adaugă în lista de Vizitate și reia procesul din noua stare până când final(Stare) devine adevărat.
+
+Reverse: Deoarece listele în Prolog se construiesc prin adăugarea elementelor la început (pentru eficiență), rezultatul final este inversat la sfârșit pentru a fi citit cronologic.
+</div>
+
+<div class="nb-cell program" name="p3">
+dfs(StareCurenta, Vizitate, DrumFinal, ActiuniCurente, ActiuniFinale)
+</div>
+
+<div class="nb-cell markdown" name="md6">
+Afișarea Rezultatelor:
+Această parte nu ține de logica problemei, ci de interfața cu utilizatorul.
+
+afiseaza_solutie: Lansează căutarea și inițializează procesul de scriere.
+
+afiseaza_pasi: O funcție recursivă care parcurge listele de stări și acțiuni în paralel, afișându-le numerotat (NrPas).
+</div>
+
+<div class="nb-cell markdown" name="md7">
+Diferenta dintre BFS si DFS:
+In BFS datele sunt structurate in forma de coada, in timp ce DFS este in forma de stiva. Desi BFS este mai optim ( cauta cel mau scurt drum), DFS are o memorie mai eficienta.
+</div>
+
+</div>
